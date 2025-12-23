@@ -17,7 +17,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: #000; margin: 0; display: flex; justify-content: center; min-height: 100vh; color: var(--text-main); }
         .mobile-container { width: 100%; max-width: 500px; background: var(--dark-bg); min-height: 100vh; position: relative; border: 1px solid #333; box-sizing: border-box; }
 
-        /* BANNER ALTERNATIV (FĂRĂ POZĂ) */
+        /* BANNER */
         .main-hero {
             background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
             padding: 30px 20px;
@@ -35,8 +35,16 @@
         input { padding: 15px; background: #222; border: 1px solid #444; border-radius: 12px; font-size: 16px; outline: none; color: white; }
         .search-btn { padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
+        /* BUTOANE GENURI */
         .top-hits-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
-        .hit-btn { padding: 10px 5px; border: 1px solid #444; border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; }
+        .hit-btn { padding: 10px 5px; border: 1px solid #444; border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.3s; }
+        
+        /* CLASA NOUA PENTRU BUTON ACTIV */
+        .hit-btn.active-genre { 
+            background: var(--primary) !important; 
+            color: white !important; 
+            border-color: white !important; 
+        }
 
         /* LOADING SPINNER */
         #loader { display: none; text-align: center; padding: 20px; color: var(--accent); font-weight: bold; }
@@ -94,9 +102,9 @@
             <input type="text" id="query" placeholder="Nume melodie sau artist...">
             <button class="search-btn" onclick="triggerManualSearch()">Caută pe YouTube</button>
             <div class="top-hits-container">
-                <button class="hit-btn" onclick="searchTop('manele noi', 'Top Manele')">🔥 Manele TOP</button>
-                <button class="hit-btn" onclick="searchTop('dance romanesc 2025', 'Dance RO')">📻 Dance TOP</button>
-                <button class="hit-btn" onclick="searchTop('muzica de petrecere populara', 'Petrecere')">💃 Petrecere TOP</button>
+                <button class="hit-btn" onclick="searchTop('manele noi', 'Top Manele', this)">🔥 Manele TOP</button>
+                <button class="hit-btn" onclick="searchTop('dance romanesc 2025', 'Dance RO', this)">📻 Dance TOP</button>
+                <button class="hit-btn" onclick="searchTop('muzica de petrecere populara', 'Petrecere', this)">💃 Petrecere TOP</button>
             </div>
         </div>
         
@@ -106,7 +114,7 @@
         </div>
     </div>
 
-    <div id="loader"><div class="spinner"></div>Se încarcă topul...</div>
+    <div id="loader"><div class="spinner"></div>Se încarcă rezultatele...</div>
     <div id="results-header"></div>
     <div id="results"></div>
     <button id="load-more" onclick="executeSearch(true)" style="display:none; width:90%; margin: 10px 5%; padding:15px; background:#333; color:white; border:none; border-radius:12px;">Mai multe...</button>
@@ -148,6 +156,10 @@
     function triggerManualSearch() {
         const q = document.getElementById('query').value;
         if (!q) return;
+
+        // Resetăm starea butoanelor de gen (le facem gri)
+        document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
+
         currentActiveQuery = q;
         isTopSearch = false;
         document.getElementById('main-banner').style.display = 'none';
@@ -155,7 +167,15 @@
         executeSearch(false);
     }
 
-    function searchTop(keyword, label) {
+    function searchTop(keyword, label, element) {
+        // Resetăm clasa de la toate butoanele mici
+        document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
+        
+        // Adăugăm culoarea roșie (clasa active-genre) pe cel apăsat
+        if(element) {
+            element.classList.add('active-genre');
+        }
+
         currentActiveQuery = keyword;
         isTopSearch = true;
         document.getElementById('main-banner').style.display = 'none';
@@ -224,11 +244,10 @@
         if (!items.length) return alert("Lista e goală!");
         const nume = prompt("Numele tău:");
         if (!nume) return;
-        let msg = `Salut! Sunt ${nume.toUpperCase()} și doresc:\n\n`;
+        let msg = `Salut! Sunt ${nume.toUpperCase()} și doresc următoarea muzică pe stick:\n\n`;
         items.forEach((it, i) => msg += `${i + 1}. ${it.innerText}\n`);
         window.open(`https://api.whatsapp.com/send?phone=40751904338&text=${encodeURIComponent(msg)}`, '_blank');
     }
 </script>
 </body>
 </html>
-
