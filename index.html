@@ -14,142 +14,72 @@
             --accent: #ffcc00;
         }
 
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: #000000; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            color: var(--text-main); 
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #000; margin: 0; display: flex; justify-content: center; min-height: 100vh; color: var(--text-main); }
+        .mobile-container { width: 100%; max-width: 500px; background: var(--dark-bg); min-height: 100vh; position: relative; border: 1px solid #333; box-sizing: border-box; }
 
-        .mobile-container { 
-            width: 100%; max-width: 500px; 
-            background: var(--dark-bg); 
-            min-height: 100vh; 
-            position: relative; 
-            border: 1px solid #333; 
-            box-sizing: border-box; 
-        }
-
-        .top-steps {
-            background: #000;
-            color: var(--text-dim);
-            padding: 12px;
-            font-size: 11px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-            border-bottom: 2px solid var(--primary);
-        }
-        .step { display: flex; align-items: center; gap: 5px; }
-
-        .header { padding: 15px; background: var(--dark-bg); }
-        .search-bar { display: flex; flex-direction: column; gap: 10px; }
-        input { 
-            padding: 15px; background: #222; border: 1px solid #444; 
-            border-radius: 12px; font-size: 16px; outline: none; color: white;
-        }
-        .search-btn { 
-            padding: 15px; background: var(--primary); color: white; 
-            border: none; border-radius: 12px; font-weight: bold; cursor: pointer; 
-        }
-
-        /* BUTOANE TOP HITS */
-        .top-hits-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 5px;
-        }
-        .hit-btn {
-            padding: 10px 5px;
-            border: 1px solid #444;
-            border-radius: 10px;
-            background: #1a1a1a;
-            color: #eee;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+        /* BANNER ALTERNATIV (FĂRĂ POZĂ) */
+        .main-hero {
+            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
+            padding: 30px 20px;
+            border-radius: 15px;
+            margin: 15px;
             text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
-        .hit-btn:active { transform: scale(0.95); background: #333; }
+        .main-hero h1 { margin: 0; font-size: 22px; color: #fff; }
+        .main-hero p { margin: 5px 0 0; font-size: 14px; color: #e0e0e0; }
 
-        #main-banner { 
-            width: 100%; 
-            height: auto; 
-            border-radius: 12px; 
-            margin-top: 15px; 
-            display: block;
-        }
+        .top-steps { background: #000; color: var(--text-dim); padding: 12px; font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; border-bottom: 2px solid var(--primary); }
+        .header { padding: 15px; }
+        .search-bar { display: flex; flex-direction: column; gap: 10px; }
+        input { padding: 15px; background: #222; border: 1px solid #444; border-radius: 12px; font-size: 16px; outline: none; color: white; }
+        .search-btn { padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        #results-header {
-            padding: 15px 15px 0;
-            font-size: 16px;
-            color: var(--accent);
-            font-weight: bold;
-            display: none;
-            text-transform: uppercase;
-        }
+        .top-hits-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .hit-btn { padding: 10px 5px; border: 1px solid #444; border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; }
 
+        /* LOADING SPINNER */
+        #loader { display: none; text-align: center; padding: 20px; color: var(--accent); font-weight: bold; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #results-header { padding: 15px 15px 0; font-size: 16px; color: var(--accent); font-weight: bold; display: none; text-transform: uppercase; }
         #results { padding: 10px; }
-        .result-item { 
-            display: flex; flex-direction: column; gap: 10px; padding: 15px; 
-            border-bottom: 1px solid #222; margin-bottom: 10px;
-        }
+        .result-item { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 10px; }
         .result-item img { width: 100%; border-radius: 12px; cursor: pointer; }
-        .video-title { color: #fff; font-size: 15px; font-weight: 600; margin-top: 5px; display: block; }
+        .video-title { color: #fff; font-size: 15px; font-weight: 600; }
 
         .btn-group { display: flex; gap: 10px; }
-        .play-btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; flex: 1; cursor: pointer; font-weight: bold; }
+        .play-btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
         .add-btn { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
 
-        #load-more { width: 90%; margin: 20px 5%; padding: 15px; display: none; background: #333; color: white; border: none; border-radius: 12px; }
-
-        /* PLAYER */
-        #player-container { 
-            display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); 
-            width: 90%; max-width: 450px; background: #222; z-index: 3000; 
-            padding: 10px; border-radius: 20px; border: 1px solid #444;
-        }
+        #player-container { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #222; z-index: 3000; padding: 10px; border-radius: 20px; border: 1px solid #444; }
         #player-container.active { display: block; }
         iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; border: none; }
-        .close-player { position: absolute; top: -10px; right: -10px; background: var(--primary); color: white; border: 2px solid white; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; }
+        .close-player { position: absolute; top: -10px; right: -10px; background: var(--primary); border: 2px solid white; border-radius: 50%; width: 35px; height: 35px; color: white; cursor: pointer; }
 
-        /* PLAYLIST DRAWER */
-        #playlist-drawer { 
-            position: fixed; top: 0; right: -100%; width: 85%; max-width: 400px; height: 100%; 
-            background: #121212; z-index: 4000; box-shadow: -5px 0 15px rgba(0,0,0,0.5); 
-            transition: 0.4s ease; display: flex; flex-direction: column; color: white;
-        }
+        #playlist-drawer { position: fixed; top: 0; right: -100%; width: 85%; max-width: 400px; height: 100%; background: #121212; z-index: 4000; transition: 0.4s ease; display: flex; flex-direction: column; }
         #playlist-drawer.open { right: 0; }
         .drawer-header { padding: 20px; background: #000; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
         #my-playlist { flex: 1; overflow-y: auto; padding: 15px; list-style: none; margin: 0; }
         .playlist-item { background: #222; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
-        .delete-btn { color: #ff4444; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 18px; }
+        .delete-btn { color: #ff4444; border: none; background: none; font-size: 18px; cursor: pointer; }
 
-        /* FAB */
-        .fab-container { position: fixed; bottom: 30px; right: calc(50% - 230px); z-index: 2500; }
-        @media (max-width: 500px) { .fab-container { right: 20px; } }
-        .fab { width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; font-size: 28px; transition: transform 0.2s; }
-        .counter-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: black; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-size: 12px; border: 2px solid #000; }
+        .fab-container { position: fixed; bottom: 30px; right: 20px; z-index: 2500; }
+        .fab { width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; font-size: 28px; }
+        .counter-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #000; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-size: 12px; }
         
         .drawer-footer { padding: 10px; display: flex; flex-direction: column; gap: 10px; background: #000; }
-        .send-btn { padding: 15px; background: var(--whatsapp); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .clear-btn { padding: 8px; background: transparent; color: #ff4444; border: none; font-size: 12px; cursor: pointer; }
-
-        @keyframes bump { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .bump-anim { animation: bump 0.3s ease-out; }
+        .send-btn { padding: 15px; background: var(--whatsapp); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .clear-btn { padding: 8px; background: transparent; color: #ff4444; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="mobile-container">
     <div class="top-steps">
-        <div class="step">🔍 Caută / Topuri</div>
-        <div class="step">▶ Redă Video</div>
+        <div class="step">🔍 Caută Muzica</div>
+        <div class="step">▶ Verifică Video</div>
         <div class="step">➕ Pune în Listă</div>
         <div class="step">📱 WhatsApp</div>
     </div>
@@ -161,38 +91,41 @@
 
     <div class="header">
         <div class="search-bar">
-            <input type="text" id="query" placeholder="Ce melodie vrei?">
+            <input type="text" id="query" placeholder="Nume melodie sau artist...">
             <button class="search-btn" onclick="triggerManualSearch()">Caută pe YouTube</button>
-            
             <div class="top-hits-container">
-                <button class="hit-btn" onclick="searchTop('manele noi', 'Top Manele')">🔥 Manele Top</button>
-                <button class="hit-btn" onclick="searchTop('dance romanesc 2025', 'Dance RO')">📻 Dance Top</button>
-                <button class="hit-btn" onclick="searchTop('muzica de petrecere populara', 'Petrecere')">💃 Petrecere Top</button>
+                <button class="hit-btn" onclick="searchTop('manele noi', 'Top Manele')">🔥 Manele</button>
+                <button class="hit-btn" onclick="searchTop('dance romanesc 2025', 'Dance RO')">📻 Dance RO</button>
+                <button class="hit-btn" onclick="searchTop('muzica de petrecere populara', 'Petrecere')">💃 Petrecere</button>
             </div>
-
-            <img src="img/bannerplaylist.jpg" id="main-banner" alt="Banner Principal">
+        </div>
+        
+        <div id="main-banner" class="main-hero">
+            <h1>Muzică pe Stick</h1>
+            <p>Comandă acum melodiile preferate!</p>
         </div>
     </div>
 
+    <div id="loader"><div class="spinner"></div>Se încarcă topul...</div>
     <div id="results-header"></div>
     <div id="results"></div>
-    <button id="load-more" onclick="loadMoreResults()">Încarcă mai multe...</button>
+    <button id="load-more" onclick="executeSearch(true)" style="display:none; width:90%; margin: 10px 5%; padding:15px; background:#333; color:white; border:none; border-radius:12px;">Mai multe...</button>
 </div>
 
 <div class="fab-container" onclick="togglePlaylist()">
-    <div id="fab-icon" class="fab">🎵</div>
+    <div class="fab">🎵</div>
     <div id="badge" class="counter-badge" style="display:none;">0</div>
 </div>
 
 <div id="playlist-drawer">
     <div class="drawer-header">
         <span>Lista mea Stick USB</span>
-        <button onclick="togglePlaylist()" style="background:none; border:none; color:white; font-size:30px;">×</button>
+        <button onclick="togglePlaylist()" style="color:white; background:none; border:none; font-size:30px;">×</button>
     </div>
     <ul id="my-playlist"></ul>
     <div class="drawer-footer">
-        <button class="clear-btn" onclick="clearFullPlaylist()">🗑 Golește toată lista</button>
-        <button class="send-btn" onclick="sendToWhatsApp()">Trimite Comanda</button>
+        <button class="clear-btn" onclick="clearFullPlaylist()">🗑 Golește tot</button>
+        <button class="send-btn" onclick="sendToWhatsApp()">Trimite pe WhatsApp 📱</button>
     </div>
 </div>
 
@@ -204,19 +137,18 @@
     let isTopSearch = false;
 
     window.onload = () => {
-        const savedData = localStorage.getItem('myPlaylist');
-        if (savedData) {
-            const list = document.getElementById('my-playlist');
-            list.innerHTML = savedData;
-            songCount = list.querySelectorAll('li').length;
+        const saved = localStorage.getItem('myPlaylist');
+        if (saved) {
+            document.getElementById('my-playlist').innerHTML = saved;
+            songCount = document.querySelectorAll('.playlist-item').length;
             updateBadge();
         }
     };
 
     function triggerManualSearch() {
-        const query = document.getElementById('query').value;
-        if (!query) return;
-        currentActiveQuery = query;
+        const q = document.getElementById('query').value;
+        if (!q) return;
+        currentActiveQuery = q;
         isTopSearch = false;
         document.getElementById('main-banner').style.display = 'none';
         document.getElementById('results-header').style.display = 'none';
@@ -227,122 +159,74 @@
         currentActiveQuery = keyword;
         isTopSearch = true;
         document.getElementById('main-banner').style.display = 'none';
-        const head = document.getElementById('results-header');
-        head.innerText = "Afișez: " + label;
-        head.style.display = 'block';
+        document.getElementById('results-header').innerText = "Afișez: " + label;
+        document.getElementById('results-header').style.display = 'block';
         executeSearch(false);
     }
 
-    function loadMoreResults() {
-        executeSearch(true);
-    }
-
     async function executeSearch(isMore = false) {
-        if (!currentActiveQuery) return;
-        
+        const loader = document.getElementById('loader');
+        loader.style.display = 'block';
+        if(!isMore) document.getElementById('results').innerHTML = '';
+
         const date = new Date();
         date.setDate(date.getDate() - 90);
-        const publishedAfter = date.toISOString();
-
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEY}`;
-        
-        if (isTopSearch) {
-            url += `&order=viewCount&publishedAfter=${publishedAfter}`;
-        }
-        
+        if (isTopSearch) url += `&order=viewCount&publishedAfter=${date.toISOString()}`;
         if (isMore && nextPageToken) url += `&pageToken=${nextPageToken}`;
 
         try {
-            const response = await fetch(url);
-            const data = await response.json();
+            const res = await fetch(url);
+            const data = await res.json();
             nextPageToken = data.nextPageToken;
             displayResults(data.items, isMore);
             document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-        } catch (e) { alert("Eroare la conexiune."); }
+        } catch (e) { alert("Eroare YouTube."); }
+        loader.style.display = 'none';
     }
 
     function displayResults(items, isMore) {
-        const resultsDiv = document.getElementById('results');
-        if (!isMore) {
-            resultsDiv.innerHTML = '';
-            window.scrollTo(0,0);
-        }
+        const div = document.getElementById('results');
         items.forEach(item => {
-            const cleanTitle = item.snippet.title.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            const videoId = item.id.videoId;
-            resultsDiv.innerHTML += `
+            const title = item.snippet.title.replace(/"/g, '&quot;');
+            div.innerHTML += `
                 <div class="result-item">
-                    <img src="${item.snippet.thumbnails.medium.url}" onclick="playVideo('${videoId}')">
+                    <img src="${item.snippet.thumbnails.medium.url}" onclick="playVideo('${item.id.videoId}')">
                     <span class="video-title">${item.snippet.title}</span>
                     <div class="btn-group">
-                        <button class="play-btn" onclick="playVideo('${videoId}')">▶ Redare</button>
-                        <button class="add-btn" onclick="addToPlaylist('${cleanTitle}')">＋ Adaugă</button>
+                        <button class="play-btn" onclick="playVideo('${item.id.videoId}')">▶ Redă</button>
+                        <button class="add-btn" onclick="addToPlaylist('${title}')">＋ Adaugă</button>
                     </div>
                 </div>`;
         });
     }
 
-    function togglePlaylist() { document.getElementById('playlist-drawer').classList.toggle('open'); }
-
-    function addToPlaylist(title) {
+    function addToPlaylist(t) {
         const list = document.getElementById('my-playlist');
         const li = document.createElement('li');
         li.className = 'playlist-item';
-        li.innerHTML = `<span>${title}</span> <button class="delete-btn" onclick="removeFromPlaylist(this)">×</button>`;
+        li.innerHTML = `<span>${t}</span> <button class="delete-btn" onclick="this.parentElement.remove(); songCount--; updateBadge(); saveToLocal();">×</button>`;
         list.appendChild(li);
         songCount++;
         updateBadge();
         saveToLocal();
-        const fab = document.getElementById('fab-icon');
-        fab.classList.add('bump-anim');
-        setTimeout(() => fab.classList.remove('bump-anim'), 300);
     }
 
-    function removeFromPlaylist(btn) {
-        btn.parentElement.remove();
-        songCount--;
-        updateBadge();
-        saveToLocal();
-    }
-
-    function clearFullPlaylist() {
-        if (confirm("Golești toată lista?")) {
-            document.getElementById('my-playlist').innerHTML = '';
-            songCount = 0;
-            updateBadge();
-            saveToLocal();
-        }
-    }
-
-    function saveToLocal() {
-        localStorage.setItem('myPlaylist', document.getElementById('my-playlist').innerHTML);
-    }
-
-    function updateBadge() {
-        const b = document.getElementById('badge');
-        b.innerText = songCount;
-        b.style.display = songCount > 0 ? 'flex' : 'none';
-    }
-
-    function playVideo(id) {
-        document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`;
-        document.getElementById('player-container').classList.add('active');
-    }
-
-    function closePlayer() {
-        document.getElementById('player-container').classList.remove('active');
-        document.getElementById('player-wrapper').innerHTML = '';
-    }
-
+    function togglePlaylist() { document.getElementById('playlist-drawer').classList.toggle('open'); }
+    function saveToLocal() { localStorage.setItem('myPlaylist', document.getElementById('my-playlist').innerHTML); }
+    function updateBadge() { const b = document.getElementById('badge'); b.innerText = songCount; b.style.display = songCount > 0 ? 'flex' : 'none'; }
+    function clearFullPlaylist() { if(confirm("Ștergi tot?")) { document.getElementById('my-playlist').innerHTML = ''; songCount = 0; updateBadge(); saveToLocal(); } }
+    function playVideo(id) { document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`; document.getElementById('player-container').classList.add('active'); }
+    function closePlayer() { document.getElementById('player-container').classList.remove('active'); document.getElementById('player-wrapper').innerHTML = ''; }
+    
     function sendToWhatsApp() {
         const items = document.querySelectorAll('#my-playlist span');
-        if (items.length === 0) return alert("Lista e goală!");
-        let nume = prompt("Numele tău:");
+        if (!items.length) return alert("Lista e goală!");
+        const nume = prompt("Numele tău:");
         if (!nume) return;
-        const numarulMeu = "40751904338"; 
-        let textMesaj = `Salut! Sunt ${nume.toUpperCase()} și doresc următoarea muzică pe stick:\n\n`;
-        items.forEach((it, i) => { textMesaj += `${i + 1}. ${it.innerText}\n`; });
-        window.open(`https://api.whatsapp.com/send?phone=${numarulMeu}&text=${encodeURIComponent(textMesaj)}`, '_blank');
+        let msg = `Salut! Sunt ${nume.toUpperCase()} și doresc:\n\n`;
+        items.forEach((it, i) => msg += `${i + 1}. ${it.innerText}\n`);
+        window.open(`https://api.whatsapp.com/send?phone=40751904338&text=${encodeURIComponent(msg)}`, '_blank');
     }
 </script>
 </body>
