@@ -35,7 +35,6 @@
         .header { padding: 15px; }
         .search-bar { display: flex; flex-direction: column; gap: 10px; }
         
-        /* Input imbunatatit pentru sugestii */
         input { padding: 15px; background: #222; border: 1px solid #444; border-radius: 12px; font-size: 16px; outline: none; color: white; width: 100%; box-sizing: border-box; }
         input:focus { border-color: var(--accent); }
 
@@ -73,6 +72,10 @@
         .fab { width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; font-size: 28px; }
         .counter-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #000; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-size: 12px; }
         
+        /* POPUP MINUTE MUZICA */
+        #time-popup { display: none; position: absolute; bottom: 75px; right: 0; background: var(--accent); color: black; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid white; animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
         .drawer-footer { padding: 10px; display: flex; flex-direction: column; gap: 10px; background: #000; }
         .send-btn { padding: 15px; background: var(--whatsapp); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
@@ -117,6 +120,7 @@
 </div>
 
 <div class="fab-container" onclick="togglePlaylist()">
+    <div id="time-popup">~ 0 min de chef</div>
     <div class="fab">🎵</div>
     <div id="badge" class="counter-badge" style="display:none;">0</div>
 </div>
@@ -134,15 +138,12 @@
 </div>
 
 <script>
-    // --- LISTA DE AUR (SMART KEYWORDS) ---
     const SMART_KEYWORDS = [
-        // MANELE
         "manele noi 2025", "manele vechi de aur", "top manele 2025", "manele de dragoste 2025", "colaj manele petrecere", 
         "manele sistem 2025", "album manele noi", "manele vechi fara reclame", "manele noi 2026", "mix manele hituri",
         "Tzanca Uraganu 2025", "Bogdan DLP", "Florin Salam vechi", "Nicolae Guta de aur", "Florin Cercel noi", 
         "Denis Ramniceanu", "Susanu hituri", "Iuly Neamtu 2025", "Costel Biju noi", "Marius Olandezu", 
         "Dani Mocanu 2025", "Jador", "Luis Gabriel", "Leo de la Rosiori", "Vali Vijelie", "Culiță Sterp",
-        // POPULARA & PETRECERE
         "muzica populara 2025", "muzica populara ardeal 2025", "muzica populara moldoveneasca", "muzica populara banat",
         "muzica populara maramures", "colaj muzica populara 2025", "hore si sarbe de nunta", "sarbe moldovenesti",
         "muzica de nunta 2025", "chef de chef petrecere", "muzica lautareasca veche", "program nunta complet",
@@ -150,7 +151,6 @@
         "Plaiesii hituri", "Armin Nicoara saxofon", "Georgiana Lobont 2025", "Nicu Paleru petrecere", 
         "Olguta Berbec", "Vluta Luta", "Constantin Enceanu", "Petrica Mitu Stoian", "Vărul Săndel",
         "colaj etno 2025", "colaj manele 2026", "cea mai buna muzica",
-        // DANCE & INTERNATIONAL
         "dance romanesc 2025", "radio zu hits 2025", "kiss fm fresh top 40", "muzica de masina bass boosted", 
         "Inna hituri", "Alexandra Stan", "Minelli", "Carla's Dreams 2025", "The Motans", "Alina Eremia", 
         "Smiley hituri", "Antonia", "Irina Rimes", "DJ Project 2025", "Delia", "Rareș",
@@ -177,7 +177,6 @@
     let currentActiveQuery = '';
 
     window.onload = () => {
-        // Populam datalist-ul pentru sugestii
         const listEl = document.getElementById('smart-list');
         SMART_KEYWORDS.forEach(word => {
             const opt = document.createElement('option');
@@ -196,27 +195,20 @@
     function triggerManualSearch() {
         const q = document.getElementById('query').value.trim();
         if (!q) return;
-
-        // FUNCTIE ADMIN SECRETĂ
-        if (q.toLowerCase() === "admin-warm") {
-            warmUpCache();
-            return;
-        }
-
+        if (q.toLowerCase() === "admin-warm") { warmUpCache(); return; }
         currentActiveQuery = q.toLowerCase();
         document.getElementById('main-banner').style.display = 'none';
         executeSearch(false);
     }
 
     async function warmUpCache() {
-        alert("Pornesc încălzirea bazei de date (~120 căutări). Nu închide pagina!");
+        alert("Pornesc încălzirea (~120 căutări). Nu închide pagina!");
         for (let word of SMART_KEYWORDS) {
             currentActiveQuery = word;
-            console.log("Caching: " + word);
             await executeSearch(false);
-            await new Promise(r => setTimeout(r, 1500)); // Pauza sa nu blocam API-ul
+            await new Promise(r => setTimeout(r, 1500));
         }
-        alert("Gata! Toate cele 120 de categorii sunt acum salvate în Firebase.");
+        alert("Gata! Cache actualizat.");
     }
 
     function searchTop(keyword, label, element) {
@@ -227,19 +219,15 @@
         executeSearch(false);
     }
 
-    function sanitizeKey(str) {
-        return btoa(unescape(encodeURIComponent(str))).replace(/\//g, '_').replace(/\+/g, '-');
-    }
+    function sanitizeKey(str) { return btoa(unescape(encodeURIComponent(str))).replace(/\//g, '_').replace(/\+/g, '-'); }
 
     async function executeSearch(isMore = false) {
         const loader = document.getElementById('loader');
         const resultsDiv = document.getElementById('results');
         loader.style.display = 'block';
         if(!isMore) resultsDiv.innerHTML = '';
-
         const safeQuery = sanitizeKey(currentActiveQuery);
 
-        // 1. CACHE FIREBASE
         if (!isMore) {
             try {
                 const snapshot = await db.ref('cache/' + safeQuery).once('value');
@@ -253,37 +241,25 @@
                         return;
                     }
                 }
-            } catch (e) { console.log("Firebase bypass"); }
+            } catch (e) {}
         }
 
-        // 2. YOUTUBE API
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEYS[currentKeyIndex]}`;
         if (isMore && nextPageToken) url += `&pageToken=${nextPageToken}`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
-
             if (data.error && data.error.code === 403) {
-                if (currentKeyIndex < API_KEYS.length - 1) {
-                    currentKeyIndex++;
-                    return executeSearch(isMore);
-                }
+                if (currentKeyIndex < API_KEYS.length - 1) { currentKeyIndex++; return executeSearch(isMore); }
             }
-
             if (!isMore && data.items) {
-                db.ref('cache/' + safeQuery).set({
-                    timestamp: Date.now(),
-                    items: data.items,
-                    nextToken: data.nextPageToken
-                });
+                db.ref('cache/' + safeQuery).set({ timestamp: Date.now(), items: data.items, nextToken: data.nextPageToken });
             }
-
             nextPageToken = data.nextPageToken;
             displayResults(data.items || [], isMore);
             document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-
-        } catch (e) { console.error("Search error"); }
+        } catch (e) {}
         loader.style.display = 'none';
     }
 
@@ -315,9 +291,23 @@
         saveToLocal();
     }
 
+    function updateBadge() {
+        const b = document.getElementById('badge');
+        const t = document.getElementById('time-popup');
+        b.innerText = songCount;
+        b.style.display = songCount > 0 ? 'flex' : 'none';
+        
+        if (songCount > 0) {
+            const minuteEstimate = Math.round(songCount * 3.5); // Media de 3.5 min/piesa
+            t.innerText = `~ ${minuteEstimate} min de muzică`;
+            t.style.display = 'block';
+        } else {
+            t.style.display = 'none';
+        }
+    }
+
     function togglePlaylist() { document.getElementById('playlist-drawer').classList.toggle('open'); }
     function saveToLocal() { localStorage.setItem('myPlaylist', document.getElementById('my-playlist').innerHTML); }
-    function updateBadge() { const b = document.getElementById('badge'); b.innerText = songCount; b.style.display = songCount > 0 ? 'flex' : 'none'; }
     function clearFullPlaylist() { if(confirm("Golești toată lista?")) { document.getElementById('my-playlist').innerHTML = ''; songCount = 0; updateBadge(); saveToLocal(); } }
     function playVideo(id) { document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`; document.getElementById('player-container').classList.add('active'); }
     function closePlayer() { document.getElementById('player-container').classList.remove('active'); document.getElementById('player-wrapper').innerHTML = ''; }
