@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muzică pe Stick - WhatsApp Edition</title>
+    <title>Muzică pe Stick - Global Edition</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
     <style>
         :root { 
             --primary: #ff0000; 
@@ -134,10 +137,23 @@
 </div>
 
 <script>
-    // SISTEM MULTI-KEY (Pune aici a doua cheie)
+    // --- CONFIGURARE FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC_tupGRUV-wfahhi-dWKE8GL_GXgteUFY",
+        authDomain: "muzicapestick.firebaseapp.com",
+        databaseURL: "https://muzicapestick-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "muzicapestick",
+        storageBucket: "muzicapestick.firebasestorage.app",
+        messagingSenderId: "1071534378944",
+        appId: "1:1071534378944:web:5b85e929befe5dab6a4225"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- CONFIGURARE YOUTUBE API ---
     const API_KEYS = [
         'AIzaSyAUe7cGnIMt5NK6JAnWithf-5hz4VDTzWA', 
-        'AIzaSyBHXGyMD9NjuRwH9y8UoqJyNpTSxjo1NHE' 
+        'AICI_PUI_A_DOUA_CHEIE' 
     ];
     let currentKeyIndex = 0;
     
@@ -169,7 +185,6 @@
     function searchTop(keyword, label, element) {
         document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
         if(element) element.classList.add('active-genre');
-
         currentActiveQuery = keyword.toLowerCase();
         isTopSearch = true;
         document.getElementById('main-banner').style.display = 'none';
@@ -178,32 +193,39 @@
         executeSearch(false);
     }
 
+    // Funcție pentru curățarea cheii de Firebase (nu acceptă caractere speciale ca . sau #)
+    function sanitizeKey(str) {
+        return btoa(unescape(encodeURIComponent(str))).replace(/\//g, '_').replace(/\+/g, '-');
+    }
+
     async function executeSearch(isMore = false) {
         const loader = document.getElementById('loader');
         const resultsDiv = document.getElementById('results');
-        
         loader.style.display = 'block';
         if(!isMore) resultsDiv.innerHTML = '';
 
-        // --- SISTEM CACHE ---
-        const cacheKey = `cache_${currentActiveQuery}_${isTopSearch}`;
+        const safeQuery = sanitizeKey(currentActiveQuery + "_" + isTopSearch);
+
+        // 1. Încearcă CACHE GLOBAL (Firebase)
         if (!isMore) {
-            const cachedData = localStorage.getItem(cacheKey);
-            if (cachedData) {
-                const parsed = JSON.parse(cachedData);
-                // Verificăm dacă cache-ul e mai vechi de 24h
-                if (Date.now() - parsed.timestamp < 86400000) {
-                    console.log("Afișez din CACHE (Cost 0)");
-                    displayResults(parsed.items, false);
-                    nextPageToken = parsed.nextToken;
-                    document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-                    loader.style.display = 'none';
-                    return;
+            try {
+                const snapshot = await db.ref('cache/' + safeQuery).once('value');
+                if (snapshot.exists()) {
+                    const cachedData = snapshot.val();
+                    // Verificăm dacă e mai vechi de 48h
+                    if (Date.now() - cachedData.timestamp < 172800000) {
+                        console.log("Afișez din Firebase (Cost 0)");
+                        displayResults(cachedData.items, false);
+                        nextPageToken = cachedData.nextToken;
+                        document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
+                        loader.style.display = 'none';
+                        return;
+                    }
                 }
-            }
+            } catch (e) { console.log("Firebase error, trecem la YouTube..."); }
         }
 
-        // --- CONSTRUCȚIE URL ---
+        // 2. Dacă nu e în cache, cerem la YouTube
         const date = new Date();
         date.setDate(date.getDate() - 90);
         let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEYS[currentKeyIndex]}`;
@@ -214,27 +236,22 @@
             const res = await fetch(url);
             const data = await res.json();
 
-            // Verificare eroare cotă (ROTATIE KEY)
-            if (data.error && (data.error.errors[0].reason === 'quotaExceeded' || data.error.code === 403)) {
+            if (data.error && (data.error.code === 403)) {
                 if (currentKeyIndex < API_KEYS.length - 1) {
                     currentKeyIndex++;
-                    console.warn("Cota epuizată pe cheia 1. Comut la cheia " + (currentKeyIndex + 1));
                     return executeSearch(isMore);
-                } else {
-                    throw new Error("Toate cheile sunt epuizate.");
-                }
+                } else { throw new Error("Cota epuizată."); }
             }
 
-            if (!data.items) throw new Error("Nu s-au găsit rezultate.");
+            if (!data.items || data.items.length === 0) throw new Error("Nu s-au găsit rezultate.");
 
-            // Salvare în Cache (doar pentru prima pagină a căutării)
+            // 3. Salvăm în Firebase pentru alții
             if (!isMore) {
-                const cacheObject = {
+                db.ref('cache/' + safeQuery).set({
                     timestamp: Date.now(),
                     items: data.items,
                     nextToken: data.nextPageToken
-                };
-                localStorage.setItem(cacheKey, JSON.stringify(cacheObject));
+                });
             }
 
             nextPageToken = data.nextPageToken;
@@ -242,8 +259,7 @@
             document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
 
         } catch (e) {
-            alert(e.message === "Toate cheile sunt epuizate." ? "Limita zilnică Google a fost atinsă. Revino mâine!" : "Eroare la căutare.");
-            console.error(e);
+            alert(e.message === "Cota epuizată." ? "Reveniti maine!" : "Eroare YouTube.");
         }
         loader.style.display = 'none';
     }
@@ -254,8 +270,7 @@
             const title = item.snippet.title.replace(/"/g, '&quot;');
             const videoId = item.id.videoId;
             const thumb = item.snippet.thumbnails.medium.url;
-            
-            const itemHtml = `
+            div.insertAdjacentHTML('beforeend', `
                 <div class="result-item">
                     <img src="${thumb}" onclick="playVideo('${videoId}')">
                     <span class="video-title">${item.snippet.title}</span>
@@ -263,8 +278,7 @@
                         <button class="play-btn" onclick="playVideo('${videoId}')">▶ Redă</button>
                         <button class="add-btn" onclick="addToPlaylist('${title}')">＋ Adaugă</button>
                     </div>
-                </div>`;
-            div.insertAdjacentHTML('beforeend', itemHtml);
+                </div>`);
         });
     }
 
@@ -298,4 +312,3 @@
 </script>
 </body>
 </html>
-
