@@ -17,7 +17,6 @@
         body { font-family: 'Segoe UI', sans-serif; background: #000; margin: 0; display: flex; justify-content: center; min-height: 100vh; color: var(--text-main); }
         .mobile-container { width: 100%; max-width: 500px; background: var(--dark-bg); min-height: 100vh; position: relative; border: 1px solid #333; box-sizing: border-box; }
 
-        /* BANNER */
         .main-hero {
             background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
             padding: 30px 20px;
@@ -35,18 +34,15 @@
         input { padding: 15px; background: #222; border: 1px solid #444; border-radius: 12px; font-size: 16px; outline: none; color: white; }
         .search-btn { padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        /* BUTOANE GENURI */
         .top-hits-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
         .hit-btn { padding: 10px 5px; border: 1px solid #444; border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.3s; }
         
-        /* CLASA NOUA PENTRU BUTON ACTIV */
         .hit-btn.active-genre { 
             background: var(--primary) !important; 
             color: white !important; 
             border-color: white !important; 
         }
 
-        /* LOADING SPINNER */
         #loader { display: none; text-align: center; padding: 20px; color: var(--accent); font-weight: bold; }
         .spinner { width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -138,7 +134,13 @@
 </div>
 
 <script>
-    const API_KEY = 'AIzaSyAUe7cGnIMt5NK6JAnWithf-5hz4VDTzWA';
+    // SISTEM MULTI-KEY (Pune aici a doua cheie)
+    const API_KEYS = [
+        'AIzaSyAUe7cGnIMt5NK6JAnWithf-5hz4VDTzWA', 
+        'AICI_PUI_A_DOUA_CHEIE' 
+    ];
+    let currentKeyIndex = 0;
+    
     let nextPageToken = '';
     let songCount = 0;
     let currentActiveQuery = '';
@@ -156,11 +158,8 @@
     function triggerManualSearch() {
         const q = document.getElementById('query').value;
         if (!q) return;
-
-        // Resetăm starea butoanelor de gen (le facem gri)
         document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
-
-        currentActiveQuery = q;
+        currentActiveQuery = q.trim().toLowerCase();
         isTopSearch = false;
         document.getElementById('main-banner').style.display = 'none';
         document.getElementById('results-header').style.display = 'none';
@@ -168,15 +167,10 @@
     }
 
     function searchTop(keyword, label, element) {
-        // Resetăm clasa de la toate butoanele mici
         document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
-        
-        // Adăugăm culoarea roșie (clasa active-genre) pe cel apăsat
-        if(element) {
-            element.classList.add('active-genre');
-        }
+        if(element) element.classList.add('active-genre');
 
-        currentActiveQuery = keyword;
+        currentActiveQuery = keyword.toLowerCase();
         isTopSearch = true;
         document.getElementById('main-banner').style.display = 'none';
         document.getElementById('results-header').innerText = "Afișez: " + label;
@@ -186,22 +180,71 @@
 
     async function executeSearch(isMore = false) {
         const loader = document.getElementById('loader');
+        const resultsDiv = document.getElementById('results');
+        
         loader.style.display = 'block';
-        if(!isMore) document.getElementById('results').innerHTML = '';
+        if(!isMore) resultsDiv.innerHTML = '';
 
+        // --- SISTEM CACHE ---
+        const cacheKey = `cache_${currentActiveQuery}_${isTopSearch}`;
+        if (!isMore) {
+            const cachedData = localStorage.getItem(cacheKey);
+            if (cachedData) {
+                const parsed = JSON.parse(cachedData);
+                // Verificăm dacă cache-ul e mai vechi de 24h
+                if (Date.now() - parsed.timestamp < 86400000) {
+                    console.log("Afișez din CACHE (Cost 0)");
+                    displayResults(parsed.items, false);
+                    nextPageToken = parsed.nextToken;
+                    document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
+                    loader.style.display = 'none';
+                    return;
+                }
+            }
+        }
+
+        // --- CONSTRUCȚIE URL ---
         const date = new Date();
         date.setDate(date.getDate() - 90);
-        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEY}`;
+        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEYS[currentKeyIndex]}`;
         if (isTopSearch) url += `&order=viewCount&publishedAfter=${date.toISOString()}`;
         if (isMore && nextPageToken) url += `&pageToken=${nextPageToken}`;
 
         try {
             const res = await fetch(url);
             const data = await res.json();
+
+            // Verificare eroare cotă (ROTATIE KEY)
+            if (data.error && (data.error.errors[0].reason === 'quotaExceeded' || data.error.code === 403)) {
+                if (currentKeyIndex < API_KEYS.length - 1) {
+                    currentKeyIndex++;
+                    console.warn("Cota epuizată pe cheia 1. Comut la cheia " + (currentKeyIndex + 1));
+                    return executeSearch(isMore);
+                } else {
+                    throw new Error("Toate cheile sunt epuizate.");
+                }
+            }
+
+            if (!data.items) throw new Error("Nu s-au găsit rezultate.");
+
+            // Salvare în Cache (doar pentru prima pagină a căutării)
+            if (!isMore) {
+                const cacheObject = {
+                    timestamp: Date.now(),
+                    items: data.items,
+                    nextToken: data.nextPageToken
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(cacheObject));
+            }
+
             nextPageToken = data.nextPageToken;
             displayResults(data.items, isMore);
             document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-        } catch (e) { alert("Eroare YouTube."); }
+
+        } catch (e) {
+            alert(e.message === "Toate cheile sunt epuizate." ? "Limita zilnică Google a fost atinsă. Revino mâine!" : "Eroare la căutare.");
+            console.error(e);
+        }
         loader.style.display = 'none';
     }
 
@@ -209,15 +252,19 @@
         const div = document.getElementById('results');
         items.forEach(item => {
             const title = item.snippet.title.replace(/"/g, '&quot;');
-            div.innerHTML += `
+            const videoId = item.id.videoId;
+            const thumb = item.snippet.thumbnails.medium.url;
+            
+            const itemHtml = `
                 <div class="result-item">
-                    <img src="${item.snippet.thumbnails.medium.url}" onclick="playVideo('${item.id.videoId}')">
+                    <img src="${thumb}" onclick="playVideo('${videoId}')">
                     <span class="video-title">${item.snippet.title}</span>
                     <div class="btn-group">
-                        <button class="play-btn" onclick="playVideo('${item.id.videoId}')">▶ Redă</button>
+                        <button class="play-btn" onclick="playVideo('${videoId}')">▶ Redă</button>
                         <button class="add-btn" onclick="addToPlaylist('${title}')">＋ Adaugă</button>
                     </div>
                 </div>`;
+            div.insertAdjacentHTML('beforeend', itemHtml);
         });
     }
 
@@ -244,11 +291,10 @@
         if (!items.length) return alert("Lista e goală!");
         const nume = prompt("Numele tău:");
         if (!nume) return;
-        let msg = `Salut! Sunt ${nume.toUpperCase()} și doresc următoarea muzică pe stick:\n\n`;
-        items.forEach((it, i) => msg += `${i + 1}. ${it.innerText}\n`);
-        window.open(`https://api.whatsapp.com/send?phone=40751904338&text=${encodeURIComponent(msg)}`, '_blank');
+        let msg = `Salut! Sunt *${nume.toUpperCase()}* și doresc următoarea muzică pe stick:\n\n`;
+        items.forEach((it, i) => msg += `*${i + 1}.* ${it.innerText}\n`);
+        window.open(`https://wa.me/40751904338?text=${encodeURIComponent(msg)}`, '_blank');
     }
 </script>
 </body>
 </html>
-
