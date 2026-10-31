@@ -1,154 +1,88 @@
-# PROIECT: LYRA & IONUȚ MUSIC 🎵
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090814">
+  <meta name="description" content="Lyra & Ionuț — Our Music • Our Universe">
+  <title>Lyra &amp; Ionuț — Our Music • Our Universe</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app-shell">
+    <div class="ambient ambient--violet" aria-hidden="true"></div>
+    <div class="ambient ambient--blue" aria-hidden="true"></div>
+    <div class="particles" id="particles" aria-hidden="true"></div>
 
-Creează un website muzical modern, premium, complet funcțional, folosind HTML5, CSS3 și JavaScript vanilla, fără framework-uri și fără servicii plătite.
+    <div class="speakers" id="speakers" aria-hidden="true">
+      <div class="speaker speaker--left">
+        <div class="speaker-cone"><span class="speaker-core"></span></div>
+      </div>
+      <div class="speaker speaker--right">
+        <div class="speaker-cone"><span class="speaker-core"></span></div>
+      </div>
+      <span class="sound-wave sound-wave--one"></span>
+      <span class="sound-wave sound-wave--two"></span>
+    </div>
 
-## 1. STRUCTURA PROIECTULUI
+    <header class="site-header">
+      <div class="brand-mark" aria-hidden="true">✦</div>
+      <h1 class="brand-name">Lyra <span>&amp;</span> Ionuț</h1>
+      <p class="brand-tagline">Our Music <span aria-hidden="true">•</span> Our Universe</p>
+    </header>
 
-Folderul principal se numește `Lyra`.
+    <section class="playlist-section" aria-labelledby="playlist-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Colecția noastră</p>
+          <h2 id="playlist-heading">Playlist <span id="song-count"></span></h2>
+        </div>
+        <span class="playlist-badge" aria-hidden="true">♫</span>
+      </div>
+      <div class="playlist-scroll" id="playlist-scroll" tabindex="0" aria-label="Lista melodiilor">
+        <ol class="track-list" id="track-list"></ol>
+      </div>
+    </section>
 
-Structura:
+    <section class="mini-player" id="mini-player" aria-label="Player muzical" aria-hidden="true">
+      <div class="player-topline">
+        <div class="now-playing">
+          <span class="now-playing-indicator" aria-hidden="true"></span>
+          <span>ACUM REDĂ</span>
+        </div>
+        <button class="icon-button stop-button" id="stop-button" type="button" aria-label="Oprește și închide playerul" title="Stop">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"></rect></svg>
+        </button>
+      </div>
 
-```text
-Lyra/
-├── index.html
-├── style.css
-├── script.js
-└── song/
-    ├── melodie1.mp3
-    ├── melodie2.mp3
-    └── ...
-```
+      <p class="player-title" id="player-title">—</p>
+      <input class="seek-slider" id="seek-slider" type="range" min="0" max="1000" value="0" step="1" aria-label="Poziția în melodie">
+      <div class="time-row">
+        <span id="current-time">0:00</span>
+        <span id="total-time">--:--</span>
+      </div>
 
-Melodiile MP3 există în folderul `song/`.
+      <div class="player-controls">
+        <button class="icon-button transport-button" id="previous-button" type="button" aria-label="Melodia anterioară">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5v14M19 6l-9 6 9 6z"></path></svg>
+        </button>
+        <button class="play-button" id="play-button" type="button" aria-label="Redă">
+          <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 10 6-10 6z"></path></svg>
+          <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h3v12H8zM14 6h3v12h-3z"></path></svg>
+        </button>
+        <button class="icon-button transport-button" id="next-button" type="button" aria-label="Melodia următoare">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5v14M5 6l9 6-9 6z"></path></svg>
+        </button>
+        <label class="volume-control" for="volume-slider">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4zM16 9a5 5 0 0 1 0 6"></path></svg>
+          <input id="volume-slider" type="range" min="0" max="1" value="0.8" step="0.01" aria-label="Volum">
+        </label>
+      </div>
+      <p class="player-status" id="player-status" role="status" aria-live="polite"></p>
+    </section>
 
-## 2. DESIGN GENERAL
-
-- Website mobile-first, optimizat special pentru telefoane.
-- Conținut centrat perfect pe orizontală.
-- Lățime maximă de 430px, cu adaptare automată la ecrane mai mici.
-- Înălțime adaptată ecranului telefonului, folosind `100dvh`.
-- Aspect premium, futurist, romantic și muzical.
-- Fundal întunecat, cu degradeuri violet, albastru electric, roz neon și accente aurii.
-- Efecte glassmorphism, lumini ambientale, umbre elegante.
-- Animații fluide, fără supraîncărcarea telefonului.
-
-## 3. HEADER
-
-În partea superioară creează o bară orizontală elegantă.
-
-Text centrat:
-
-**Lyra & Ionuț**
-
-Sub titlu, mai mic:
-
-*Our Music • Our Universe*
-
-Headerul trebuie să rămână vizibil în partea superioară.
-
-Adaugă un efect subtil de strălucire asupra brandului.
-
-## 4. PLAYLIST VERTICAL
-
-Sub header, creează o zonă pentru maximum 40 de melodii.
-
-- Playlist vertical, cu scrollbar propriu.
-- Fiecare melodie într-un card compact.
-- Număr melodie, icon muzical, titlu și durata, dacă este disponibilă.
-- Melodia activă evidențiată cu neon violet/roz.
-- Animație discretă de equalizer lângă melodia activă.
-- Scroll fluid, optimizat pentru touch.
-- Playlistul trebuie să ocupe spațiul disponibil fără să depășească ecranul.
-- Headerul rămâne fix, iar doar lista de melodii se derulează.
-
-Melodiile trebuie citite dintr-un array JavaScript configurabil, folosind fișierele din `song/`.
-
-IMPORTANT: Browserul nu poate enumera automat fișierele unui folder local. Creează o listă `songs` ușor de editat, în care pot adăuga până la 40 de fișiere MP3. Nu inventa numele melodiilor reale.
-
-## 5. PLAYER MP3 POPUP
-
-Playerul trebuie să fie ascuns complet la deschiderea paginii.
-
-Când utilizatorul apasă pe o melodie:
-
-- Apare un mini-player plutitor în partea inferioară a ecranului.
-- Intră cu animație elegantă slide-up + fade-in.
-- Rămâne vizibil pe durata redării și când muzica este pusă pe pauză.
-- Dimensiune compactă, fără să ocupe mult spațiu.
-- Design glassmorphism, colțuri rotunjite și efect neon.
-
-Controale:
-
-- Play / Pause
-- Previous
-- Next
-- Volum cu slider
-- Titlul melodiei active
-- Bară de progres interactivă
-- Timp curent / durată
-
-Playerul nu trebuie să acopere ultimele melodii din playlist. Adaugă spațiu inferior dinamic când playerul este vizibil.
-
-## 6. COMPORTAMENT AUTOMAT
-
-- Când o melodie se termină natural, începe automat următoarea.
-- La ultima melodie, playlistul poate reveni la prima, folosind o opțiune `loopPlaylist`.
-- Dacă utilizatorul selectează altă melodie, cea anterioară se oprește și începe cea nouă.
-- Când utilizatorul apasă Pause, playerul rămâne vizibil pentru a permite reluarea.
-- Când apasă Stop, playerul dispare printr-o animație fade-out.
-- Dacă redarea se încheie și nu există o melodie următoare, playerul dispare.
-- Dacă browserul blochează redarea automată a următoarei melodii, tratează eroarea elegant și păstrează controalele accesibile.
-- Folosește un singur element HTMLAudioElement pentru toate melodiile.
-
-## 7. BOXE ANIMATE ÎN FUNDAL
-
-Creează două boxe audio stilizate, moderne, cu difuzoare circulare și lumini neon.
-
-- Boxele sunt vizibile ca elemente decorative în fundal, fără să afecteze lizibilitatea playlistului.
-- În timpul redării, membranele difuzoarelor pulsează și vibrează.
-- Folosește Web Audio API și AnalyserNode pentru a analiza energia reală a sunetului.
-- Intensitatea vibrațiilor trebuie să varieze în funcție de energia audio.
-- Adaugă unde luminoase și un glow subtil în jurul boxelor.
-- La Pause sau Stop, animațiile se opresc lin.
-- Optimizează animațiile pentru performanță pe telefon.
-- Respectă `prefers-reduced-motion`.
-- Dacă analiza audio nu este disponibilă, folosește o animație CSS discretă ca fallback.
-
-## 8. DETALII VIZUALE
-
-Adaugă:
-
-- Particule luminoase discrete în fundal.
-- Tranziții line între melodii.
-- Equalizer animat pentru melodia activă.
-- Efect luminos pe butonul Play.
-- Scrollbar subțire, personalizat.
-- Feedback vizual la atingerea unui card.
-- O atmosferă elegantă, romantică și tehnologică.
-
-## 9. CERINȚE TEHNICE
-
-- HTML, CSS și JavaScript separate.
-- Cod curat, comentat și ușor de modificat.
-- Fără React, fără backend, fără biblioteci externe obligatorii.
-- Folosește căi relative pentru fișiere.
-- Site funcțional pe localhost și pe GitHub Pages.
-- Nu folosi servicii externe pentru streaming.
-- Gestionează fișierele lipsă și erorile de redare.
-- Nu afișa elemente goale sau date inventate.
-- Respectă safe-area pentru telefoanele cu notch.
-- Testează interfața la 320px, 375px, 390px și 430px.
-
-## 10. REZULTAT FINAL
-
-Vreau un website muzical cu aspect de aplicație premium pentru telefon.
-
-La început se vede brandul Lyra & Ionuț, fundalul cu boxe și playlistul vertical.
-
-Când ating o melodie, muzica începe, boxele prind viață și apare mini-playerul plutitor.
-
-La terminarea melodiei, începe automat următoarea, iar playerul rămâne vizibil cât timp playlistul continuă să cânte.
-
-Creează toate cele trei fișiere complete: `index.html`, `style.css` și `script.js`.
-
-Nu modifica, nu redenumi și nu șterge fișierele MP3 din folderul `song/`.
+    <audio id="audio" preload="metadata"></audio>
+  </main>
+</body>
+</html>
