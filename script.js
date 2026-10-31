@@ -21,6 +21,10 @@ const currentTimeLabel = document.getElementById("current-time");
 const totalTimeLabel = document.getElementById("total-time");
 const volumeSlider = document.getElementById("volume-slider");
 const speakers = document.getElementById("speakers");
+const weatherTemperature = document.getElementById("weather-temperature");
+const weatherIcon = document.getElementById("weather-icon");
+const weatherDescription = document.getElementById("weather-description");
+const localTime = document.getElementById("local-time");
 
 let activeIndex = -1;
 let audioContext;
@@ -35,6 +39,72 @@ function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function updateLocalTime() {
+  localTime.textContent = new Intl.DateTimeFormat("ro-RO", {
+    timeZone: "Europe/Bucharest",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).format(new Date());
+}
+
+async function updateOutdoorTemperature() {
+  const weatherUrl = "https://api.open-meteo.com/v1/forecast?latitude=47.16667&longitude=25.83333&current=temperature_2m,weather_code&timezone=Europe%2FBucharest";
+  try {
+    const response = await fetch(weatherUrl);
+    if (!response.ok) {
+      throw new Error(`Serviciul meteo a răspuns cu statusul ${response.status}.`);
+    }
+
+    const weather = await response.json();
+    const temperature = weather.current?.temperature_2m;
+    const weatherCode = weather.current?.weather_code;
+    if (!Number.isFinite(temperature) || !Number.isInteger(weatherCode)) {
+      throw new Error("Răspunsul meteo nu conține temperatura și condiția curentă.");
+    }
+
+    const conditions = new Map([
+      [0, ["☀", "Senin"]],
+      [1, ["🌤", "Mai mult senin"]],
+      [2, ["⛅", "Parțial noros"]],
+      [3, ["☁", "Noros"]],
+      [45, ["☁", "Ceață"]],
+      [48, ["☁", "Ceață cu chiciură"]],
+      [51, ["🌦", "Burniță ușoară"]],
+      [53, ["🌦", "Burniță"]],
+      [55, ["🌧", "Burniță deasă"]],
+      [56, ["🌧", "Burniță înghețată"]],
+      [57, ["🌧", "Burniță înghețată deasă"]],
+      [61, ["🌧", "Ploaie ușoară"]],
+      [63, ["🌧", "Ploaie"]],
+      [65, ["🌧", "Ploaie puternică"]],
+      [66, ["🌧", "Ploaie înghețată"]],
+      [67, ["🌧", "Ploaie înghețată puternică"]],
+      [71, ["🌨", "Ninsoare ușoară"]],
+      [73, ["🌨", "Ninsoare"]],
+      [75, ["❄", "Ninsoare puternică"]],
+      [77, ["❄", "Grindină"]],
+      [80, ["🌦", "Averse ușoare"]],
+      [81, ["🌧", "Averse"]],
+      [82, ["🌧", "Averse puternice"]],
+      [85, ["🌨", "Averse de ninsoare"]],
+      [86, ["🌨", "Averse puternice de ninsoare"]],
+      [95, ["⛈", "Furtună"]],
+      [96, ["⛈", "Furtună cu grindină"]],
+      [99, ["⛈", "Furtună puternică"]]
+    ]);
+    const [icon, description] = conditions.get(weatherCode) ?? ["☁", "Vreme schimbătoare"];
+    weatherTemperature.textContent = `${Math.round(temperature)}°`;
+    weatherIcon.textContent = icon;
+    weatherDescription.textContent = description;
+    weatherTemperature.title = `Temperatura actuală în Fărcașa: ${temperature.toFixed(1)} °C`;
+  } catch (error) {
+    weatherTemperature.title = "Temperatura de afară nu este disponibilă.";
+    weatherDescription.textContent = "Vreme indisponibilă";
+    console.warn("Temperatura de afară nu a putut fi încărcată.", error);
+  }
 }
 
 function renderPlaylist(emptyMessage = "Nu există melodii în folderul song.") {
@@ -155,7 +225,8 @@ function stopSpeakerAnimation() {
 function animateSpeakers() {
   if (audio.paused || animationFrame) return;
 
-  let samples = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
+  const samples = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
+  const waveform = analyser ? new Uint8Array(analyser.fftSize) : null;
   const bars = [...speakers.querySelectorAll(".led-bar")];
   const measure = () => {
     if (audio.paused) {
@@ -163,23 +234,28 @@ function animateSpeakers() {
       return;
     }
     if (analyser) {
-      if (!samples || samples.length !== analyser.frequencyBinCount) {
-        samples = new Uint8Array(analyser.frequencyBinCount);
-      }
       analyser.getByteFrequencyData(samples);
+      analyser.getByteTimeDomainData(waveform);
     }
+
     bars.forEach((bar, barIndex) => {
-      let litCount;
+      let level;
       if (analyser) {
         const start = Math.floor(barIndex * samples.length / bars.length);
         const end = Math.max(start + 1, Math.floor((barIndex + 1) * samples.length / bars.length));
         let peak = 0;
         for (let index = start; index < end; index += 1) peak = Math.max(peak, samples[index]);
-        litCount = Math.round(Math.min(1, peak / 96) * bar.children.length);
+        let waveformEnergy = 0;
+        for (const sample of waveform) {
+          const amplitude = (sample - 128) / 128;
+          waveformEnergy += amplitude * amplitude;
+        }
+        const overallLevel = Math.sqrt(waveformEnergy / waveform.length);
+        level = Math.min(1, Math.max(peak / 140, overallLevel * 4));
       } else {
-        const beat = (Math.sin(audio.currentTime * 5 + barIndex * 0.9) + 1) / 2;
-        litCount = Math.round(beat * bar.children.length);
+        level = Math.max(0, Math.sin(audio.currentTime * 9 + barIndex * 1.15)) * 0.8;
       }
+      const litCount = Math.round(level * bar.children.length);
       [...bar.children].forEach((segment, segmentIndex) => {
         segment.classList.toggle("is-lit", segmentIndex >= bar.children.length - litCount);
       });
@@ -193,10 +269,9 @@ function enableSpeakerAnimation() {
   speakers.classList.add("is-playing");
   if (!analyser) {
     speakers.classList.add("is-fallback");
-    animateSpeakers();
-    return;
+  } else {
+    speakers.classList.remove("is-fallback");
   }
-  speakers.classList.remove("is-fallback");
   animateSpeakers();
 }
 
@@ -214,6 +289,9 @@ async function setupAudioAnalysis() {
 
     const nextAnalyser = audioContext.createAnalyser();
     nextAnalyser.fftSize = 128;
+    nextAnalyser.smoothingTimeConstant = 0.35;
+    nextAnalyser.minDecibels = -90;
+    nextAnalyser.maxDecibels = -20;
     mediaSource = audioContext.createMediaElementSource(audio);
     try {
       mediaSource.connect(nextAnalyser);
@@ -339,7 +417,6 @@ audio.addEventListener("timeupdate", updateProgress);
 audio.addEventListener("play", () => {
   player.classList.add("is-playing");
   updateActiveTrack();
-  enableSpeakerAnimation();
 });
 audio.addEventListener("pause", () => {
   if (!audio.paused) return;
@@ -397,6 +474,10 @@ function createLedMeter() {
 
 audio.volume = Number(volumeSlider.value);
 updateSlider(volumeSlider, audio.volume);
+updateLocalTime();
+window.setInterval(updateLocalTime, 1_000);
+updateOutdoorTemperature();
+window.setInterval(updateOutdoorTemperature, 30 * 60 * 1000);
 createLedMeter();
 if (!playlistIsValid) {
   console.error("Lista de melodii nu a putut fi încărcată din song/playlist.js.");
