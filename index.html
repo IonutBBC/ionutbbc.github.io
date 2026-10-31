@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090814">
-  <meta name="description" content="Lyra & Ionuț — Our Music • Our Universe">
-  <title>Lyra &amp; Ionuț — Our Music • Our Universe</title>
+  <meta name="description" content="Lyra & IonuțBBC — Our Music • Our Universe">
+  <title>Lyra &amp; IonuțBBC — Our Music • Our Universe</title>
   <link rel="stylesheet" href="style.css">
   <script src="song/playlist.js" defer></script>
   <script src="script.js" defer></script>
@@ -16,9 +16,23 @@
     <div class="ambient ambient--blue" aria-hidden="true"></div>
     <div class="particles" id="particles" aria-hidden="true"></div>
 
+    <div class="weather-strip" aria-label="Vremea și ora locală">
+      <div class="weather-current">
+        <div class="weather-temperature" id="weather-temperature" title="Se încarcă temperatura de afară">--°</div>
+        <div class="weather-condition">
+          <span class="weather-icon" id="weather-icon" aria-hidden="true">☁</span>
+          <span id="weather-description">Se încarcă...</span>
+        </div>
+      </div>
+      <div class="weather-location">
+        <span>Fărcașa, NT</span>
+        <time id="local-time">--:--</time>
+      </div>
+    </div>
+
     <header class="site-header">
       <div class="brand-mark" aria-hidden="true">✦</div>
-      <h1 class="brand-name">Lyra <span>&amp;</span> Ionuț</h1>
+      <h1 class="brand-name"><span></span> IonuțBBC</h1>
       <div class="speakers" id="speakers" aria-hidden="true"></div>
       <p class="brand-tagline">Our Music <span aria-hidden="true">•</span> Our Universe</p>
     </header>
