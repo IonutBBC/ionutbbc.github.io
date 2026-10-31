@@ -106,8 +106,60 @@ button {
   position: relative;
   z-index: 1;
   flex: 0 0 auto;
-  padding: 5px 0 10px;
+  padding: 42px 0 10px;
   text-align: center;
+}
+
+.weather-strip {
+  position: absolute;
+  z-index: 2;
+  top: max(12px, env(safe-area-inset-top));
+  right: 18px;
+  left: 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.weather-temperature {
+  color: #ffe28e;
+  font-size: 23px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.15;
+  text-shadow: 0 0 14px rgba(245, 214, 154, .35);
+}
+
+.weather-condition {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #bcb3d0;
+  font-size: 10px;
+}
+
+.weather-icon {
+  color: #d7e5ff;
+  font-size: 15px;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(215, 229, 255, .45);
+}
+
+.weather-location {
+  display: grid;
+  gap: 3px;
+  color: #e8e2f2;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.weather-location time {
+  color: #bcb3d0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
 .brand-mark {
@@ -389,8 +441,8 @@ button {
   min-height: 2px;
   border-radius: 1px;
   background: #1857ff;
-  opacity: .15;
-  transition: opacity 65ms linear, filter 65ms linear;
+  opacity: .16;
+  transition: opacity 20ms linear, filter 20ms linear;
 }
 
 .led-segment.is-lit {
