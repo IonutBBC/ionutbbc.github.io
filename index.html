@@ -1,328 +1,154 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Muzică pe Stick</title>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
-    <style>
-        :root { 
-            --primary: #ff0000; 
-            --whatsapp: #25D366;
-            --dark-bg: #0f0f0f; 
-            --text-main: #ffffff; 
-            --text-dim: #aaaaaa;
-            --accent: #ffcc00;
-        }
+# PROIECT: LYRA & IONUȚ MUSIC 🎵
 
-        body { font-family: 'Segoe UI', sans-serif; background: #000; margin: 0; display: flex; justify-content: center; min-height: 100vh; color: var(--text-main); }
-        .mobile-container { width: 100%; max-width: 500px; background: var(--dark-bg); min-height: 100vh; position: relative; border: 1px solid #333; box-sizing: border-box; }
+Creează un website muzical modern, premium, complet funcțional, folosind HTML5, CSS3 și JavaScript vanilla, fără framework-uri și fără servicii plătite.
 
-        .main-hero {
-            background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-            padding: 30px 20px;
-            border-radius: 15px;
-            margin: 15px;
-            text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-        }
-        .main-hero h1 { margin: 0; font-size: 22px; color: #fff; }
-        .main-hero p { margin: 5px 0 0; font-size: 14px; color: #e0e0e0; }
+## 1. STRUCTURA PROIECTULUI
 
-        .top-steps { background: #000; color: var(--text-dim); padding: 12px; font-size: 11px; display: grid; grid-template-columns: 1fr 1fr; gap: 5px; border-bottom: 2px solid var(--primary); }
-        .header { padding: 15px; }
-        .search-bar { display: flex; flex-direction: column; gap: 10px; }
-        
-        input { padding: 15px; background: #222; border: 1px solid #444; border-radius: 12px; font-size: 16px; outline: none; color: white; width: 100%; box-sizing: border-box; }
-        input:focus { border-color: var(--accent); }
+Folderul principal se numește `Lyra`.
 
-        .search-btn { padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+Structura:
 
-        .top-hits-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
-        .hit-btn { padding: 10px 5px; border: 1px solid #444; border-radius: 10px; background: #1a1a1a; color: #eee; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; transition: 0.3s; }
-        .hit-btn.active-genre { background: var(--primary) !important; color: white !important; border-color: white !important; }
+```text
+Lyra/
+├── index.html
+├── style.css
+├── script.js
+└── song/
+    ├── melodie1.mp3
+    ├── melodie2.mp3
+    └── ...
+```
 
-        #loader { display: none; text-align: center; padding: 20px; color: var(--accent); font-weight: bold; }
-        .spinner { width: 30px; height: 30px; border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+Melodiile MP3 există în folderul `song/`.
 
-        #results { padding: 10px; }
-        .result-item { display: flex; flex-direction: column; gap: 10px; padding: 15px; border-bottom: 1px solid #222; margin-bottom: 10px; }
-        .result-item img { width: 100%; border-radius: 12px; cursor: pointer; }
-        .video-title { color: #fff; font-size: 15px; font-weight: 600; }
+## 2. DESIGN GENERAL
 
-        .btn-group { display: flex; gap: 10px; }
-        .play-btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
-        .add-btn { background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; flex: 1; font-weight: bold; cursor: pointer; }
+- Website mobile-first, optimizat special pentru telefoane.
+- Conținut centrat perfect pe orizontală.
+- Lățime maximă de 430px, cu adaptare automată la ecrane mai mici.
+- Înălțime adaptată ecranului telefonului, folosind `100dvh`.
+- Aspect premium, futurist, romantic și muzical.
+- Fundal întunecat, cu degradeuri violet, albastru electric, roz neon și accente aurii.
+- Efecte glassmorphism, lumini ambientale, umbre elegante.
+- Animații fluide, fără supraîncărcarea telefonului.
 
-        #player-container { display: none; position: fixed; top: 10px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: #222; z-index: 3000; padding: 10px; border-radius: 20px; border: 1px solid #444; }
-        #player-container.active { display: block; }
-        iframe { width: 100%; aspect-ratio: 16/9; border-radius: 12px; border: none; }
-        .close-player { position: absolute; top: -10px; right: -10px; background: var(--primary); border: 2px solid white; border-radius: 50%; width: 35px; height: 35px; color: white; cursor: pointer; }
+## 3. HEADER
 
-        #playlist-drawer { position: fixed; top: 0; right: -100%; width: 85%; max-width: 400px; height: 100%; background: #121212; z-index: 4000; transition: 0.4s ease; display: flex; flex-direction: column; }
-        #playlist-drawer.open { right: 0; }
-        .drawer-header { padding: 20px; background: #000; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; }
-        #my-playlist { flex: 1; overflow-y: auto; padding: 15px; list-style: none; margin: 0; }
-        .playlist-item { background: #222; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
-        
-        .fab-container { position: fixed; bottom: 30px; right: 20px; z-index: 2500; }
-        .fab { width: 65px; height: 65px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.6); cursor: pointer; font-size: 28px; }
-        .counter-badge { position: absolute; top: 0; left: 0; background: var(--accent); color: #000; font-weight: bold; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; font-size: 12px; }
-        
-        /* POPUP MINUTE MUZICA */
-        #time-popup { display: none; position: absolute; bottom: 75px; right: 0; background: var(--accent); color: black; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 1px solid white; animation: bounce 0.5s; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+În partea superioară creează o bară orizontală elegantă.
 
-        .drawer-footer { padding: 10px; display: flex; flex-direction: column; gap: 10px; background: #000; }
-        .send-btn { padding: 15px; background: var(--whatsapp); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-    </style>
-</head>
-<body>
+Text centrat:
 
-<div class="mobile-container">
-    <div class="top-steps">
-        <div class="step">🔍 Caută</div>
-        <div class="step">▶ Verifică</div>
-        <div class="step">➕ Adaugă</div>
-        <div class="step">📱 Trimite</div>
-    </div>
+**Lyra & Ionuț**
 
-    <div id="player-container">
-        <button class="close-player" onclick="closePlayer()">×</button>
-        <div id="player-wrapper"></div>
-    </div>
+Sub titlu, mai mic:
 
-    <div class="header">
-        <div class="search-bar">
-            <input type="text" id="query" list="smart-list" placeholder="Nume melodie sau artist...">
-            <datalist id="smart-list"></datalist>
+*Our Music • Our Universe*
 
-            <button class="search-btn" onclick="triggerManualSearch()">Caută pe YouTube</button>
-            <div class="top-hits-container">
-                <button class="hit-btn" onclick="searchTop('manele noi 2025', 'Top Manele', this)">🔥 Manele TOP</button>
-                <button class="hit-btn" onclick="searchTop('muzica populara 2025', 'Populara', this)">💃 Populară TOP</button>
-                <button class="hit-btn" onclick="searchTop('radio zu hits 2025', 'Radio RO', this)">📻 Radio TOP</button>
-            </div>
-        </div>
-        
-        <div id="main-banner" class="main-hero">
-            <h1>Muzică pe Stick</h1>
-            <p>Alege-ți muzica, noi o punem pe stick!</p>
-        </div>
-    </div>
+Headerul trebuie să rămână vizibil în partea superioară.
 
-    <div id="loader"><div class="spinner"></div>Se încarcă rezultatele...</div>
-    <div id="results"></div>
-    <button id="load-more" onclick="executeSearch(true)" style="display:none; width:90%; margin: 10px 5%; padding:15px; background:#333; color:white; border:none; border-radius:12px;">Mai multe rezultate...</button>
-</div>
+Adaugă un efect subtil de strălucire asupra brandului.
 
-<div class="fab-container" onclick="togglePlaylist()">
-    <div id="time-popup">~ 0 min de chef</div>
-    <div class="fab">🎵</div>
-    <div id="badge" class="counter-badge" style="display:none;">0</div>
-</div>
+## 4. PLAYLIST VERTICAL
 
-<div id="playlist-drawer">
-    <div class="drawer-header">
-        <span>Lista mea USB</span>
-        <button onclick="togglePlaylist()" style="color:white; background:none; border:none; font-size:30px;">×</button>
-    </div>
-    <ul id="my-playlist"></ul>
-    <div class="drawer-footer">
-        <button class="send-btn" onclick="sendToWhatsApp()">Trimite Comanda pe WhatsApp 📱</button>
-        <button onclick="clearFullPlaylist()" style="color:#ff4444; background:none; border:none; cursor:pointer;">Golește Lista</button>
-    </div>
-</div>
+Sub header, creează o zonă pentru maximum 40 de melodii.
 
-<script>
-    const SMART_KEYWORDS = [
-        "manele noi 2025", "manele vechi de aur", "top manele 2025", "manele de dragoste 2025", "colaj manele petrecere", 
-        "manele sistem 2025", "album manele noi", "manele vechi fara reclame", "manele noi 2026", "mix manele hituri",
-        "Tzanca Uraganu 2025", "Bogdan DLP", "Florin Salam vechi", "Nicolae Guta de aur", "Florin Cercel noi", 
-        "Denis Ramniceanu", "Susanu hituri", "Iuly Neamtu 2025", "Costel Biju noi", "Marius Olandezu", 
-        "Dani Mocanu 2025", "Jador", "Luis Gabriel", "Leo de la Rosiori", "Vali Vijelie", "Culiță Sterp",
-        "muzica populara 2025", "muzica populara ardeal 2025", "muzica populara moldoveneasca", "muzica populara banat",
-        "muzica populara maramures", "colaj muzica populara 2025", "hore si sarbe de nunta", "sarbe moldovenesti",
-        "muzica de nunta 2025", "chef de chef petrecere", "muzica lautareasca veche", "program nunta complet",
-        "Alexandru Bradatan", "Viorica Macovei", "Angelica Flutur", "Andreea Haisan", "Fetele din Botosani", 
-        "Plaiesii hituri", "Armin Nicoara saxofon", "Georgiana Lobont 2025", "Nicu Paleru petrecere", 
-        "Olguta Berbec", "Vluta Luta", "Constantin Enceanu", "Petrica Mitu Stoian", "Vărul Săndel",
-        "colaj etno 2025", "colaj manele 2026", "cea mai buna muzica",
-        "dance romanesc 2025", "radio zu hits 2025", "kiss fm fresh top 40", "muzica de masina bass boosted", 
-        "Inna hituri", "Alexandra Stan", "Minelli", "Carla's Dreams 2025", "The Motans", "Alina Eremia", 
-        "Smiley hituri", "Antonia", "Irina Rimes", "DJ Project 2025", "Delia", "Rareș",
-        "Eminem hituri", "Rihanna best of", "Drake 2025", "The Weeknd hits", "Ed Sheeran", 
-        "Dua Lipa 2025", "Justin Bieber", "David Guetta remix", "Tiësto dance", "Beyoncé"
-    ];
+- Playlist vertical, cu scrollbar propriu.
+- Fiecare melodie într-un card compact.
+- Număr melodie, icon muzical, titlu și durata, dacă este disponibilă.
+- Melodia activă evidențiată cu neon violet/roz.
+- Animație discretă de equalizer lângă melodia activă.
+- Scroll fluid, optimizat pentru touch.
+- Playlistul trebuie să ocupe spațiul disponibil fără să depășească ecranul.
+- Headerul rămâne fix, iar doar lista de melodii se derulează.
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC_tupGRUV-wfahhi-dWKE8GL_GXgteUFY",
-        authDomain: "muzicapestick.firebaseapp.com",
-        databaseURL: "https://muzicapestick-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "muzicapestick",
-        storageBucket: "muzicapestick.firebasestorage.app",
-        messagingSenderId: "1071534378944",
-        appId: "1:1071534378944:web:5b85e929befe5dab6a4225"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+Melodiile trebuie citite dintr-un array JavaScript configurabil, folosind fișierele din `song/`.
 
-    const API_KEYS = ['AIzaSyAUe7cGnIMt5NK6JAnWithf-5hz4VDTzWA', 'AICI_PUI_A_DOUA_CHEIE'];
-    let currentKeyIndex = 0;
-    let nextPageToken = '';
-    let songCount = 0;
-    let currentActiveQuery = '';
+IMPORTANT: Browserul nu poate enumera automat fișierele unui folder local. Creează o listă `songs` ușor de editat, în care pot adăuga până la 40 de fișiere MP3. Nu inventa numele melodiilor reale.
 
-    window.onload = () => {
-        const listEl = document.getElementById('smart-list');
-        SMART_KEYWORDS.forEach(word => {
-            const opt = document.createElement('option');
-            opt.value = word;
-            listEl.appendChild(opt);
-        });
+## 5. PLAYER MP3 POPUP
 
-        const saved = localStorage.getItem('myPlaylist');
-        if (saved) {
-            document.getElementById('my-playlist').innerHTML = saved;
-            songCount = document.querySelectorAll('.playlist-item').length;
-            updateBadge();
-        }
-    };
+Playerul trebuie să fie ascuns complet la deschiderea paginii.
 
-    function triggerManualSearch() {
-        const q = document.getElementById('query').value.trim();
-        if (!q) return;
-        if (q.toLowerCase() === "admin-warm") { warmUpCache(); return; }
-        currentActiveQuery = q.toLowerCase();
-        document.getElementById('main-banner').style.display = 'none';
-        executeSearch(false);
-    }
+Când utilizatorul apasă pe o melodie:
 
-    async function warmUpCache() {
-        alert("Pornesc încălzirea (~120 căutări). Nu închide pagina!");
-        for (let word of SMART_KEYWORDS) {
-            currentActiveQuery = word;
-            await executeSearch(false);
-            await new Promise(r => setTimeout(r, 1500));
-        }
-        alert("Gata! Cache actualizat.");
-    }
+- Apare un mini-player plutitor în partea inferioară a ecranului.
+- Intră cu animație elegantă slide-up + fade-in.
+- Rămâne vizibil pe durata redării și când muzica este pusă pe pauză.
+- Dimensiune compactă, fără să ocupe mult spațiu.
+- Design glassmorphism, colțuri rotunjite și efect neon.
 
-    function searchTop(keyword, label, element) {
-        document.querySelectorAll('.hit-btn').forEach(btn => btn.classList.remove('active-genre'));
-        if(element) element.classList.add('active-genre');
-        currentActiveQuery = keyword.toLowerCase();
-        document.getElementById('main-banner').style.display = 'none';
-        executeSearch(false);
-    }
+Controale:
 
-    function sanitizeKey(str) { return btoa(unescape(encodeURIComponent(str))).replace(/\//g, '_').replace(/\+/g, '-'); }
+- Play / Pause
+- Previous
+- Next
+- Volum cu slider
+- Titlul melodiei active
+- Bară de progres interactivă
+- Timp curent / durată
 
-    async function executeSearch(isMore = false) {
-        const loader = document.getElementById('loader');
-        const resultsDiv = document.getElementById('results');
-        loader.style.display = 'block';
-        if(!isMore) resultsDiv.innerHTML = '';
-        const safeQuery = sanitizeKey(currentActiveQuery);
+Playerul nu trebuie să acopere ultimele melodii din playlist. Adaugă spațiu inferior dinamic când playerul este vizibil.
 
-        if (!isMore) {
-            try {
-                const snapshot = await db.ref('cache/' + safeQuery).once('value');
-                if (snapshot.exists()) {
-                    const cachedData = snapshot.val();
-                    if (Date.now() - cachedData.timestamp < 172800000) {
-                        displayResults(cachedData.items, false);
-                        nextPageToken = cachedData.nextToken;
-                        document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-                        loader.style.display = 'none';
-                        return;
-                    }
-                }
-            } catch (e) {}
-        }
+## 6. COMPORTAMENT AUTOMAT
 
-        let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=50&q=${encodeURIComponent(currentActiveQuery)}&type=video&key=${API_KEYS[currentKeyIndex]}`;
-        if (isMore && nextPageToken) url += `&pageToken=${nextPageToken}`;
+- Când o melodie se termină natural, începe automat următoarea.
+- La ultima melodie, playlistul poate reveni la prima, folosind o opțiune `loopPlaylist`.
+- Dacă utilizatorul selectează altă melodie, cea anterioară se oprește și începe cea nouă.
+- Când utilizatorul apasă Pause, playerul rămâne vizibil pentru a permite reluarea.
+- Când apasă Stop, playerul dispare printr-o animație fade-out.
+- Dacă redarea se încheie și nu există o melodie următoare, playerul dispare.
+- Dacă browserul blochează redarea automată a următoarei melodii, tratează eroarea elegant și păstrează controalele accesibile.
+- Folosește un singur element HTMLAudioElement pentru toate melodiile.
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (data.error && data.error.code === 403) {
-                if (currentKeyIndex < API_KEYS.length - 1) { currentKeyIndex++; return executeSearch(isMore); }
-            }
-            if (!isMore && data.items) {
-                db.ref('cache/' + safeQuery).set({ timestamp: Date.now(), items: data.items, nextToken: data.nextPageToken });
-            }
-            nextPageToken = data.nextPageToken;
-            displayResults(data.items || [], isMore);
-            document.getElementById('load-more').style.display = nextPageToken ? 'block' : 'none';
-        } catch (e) {}
-        loader.style.display = 'none';
-    }
+## 7. BOXE ANIMATE ÎN FUNDAL
 
-    function displayResults(items, isMore) {
-        const div = document.getElementById('results');
-        items.forEach(item => {
-            const title = item.snippet.title.replace(/"/g, '&quot;');
-            const videoId = item.id.videoId;
-            div.insertAdjacentHTML('beforeend', `
-                <div class="result-item">
-                    <img src="${item.snippet.thumbnails.medium.url}" onclick="playVideo('${videoId}')">
-                    <span class="video-title">${item.snippet.title}</span>
-                    <div class="btn-group">
-                        <button class="play-btn" onclick="playVideo('${videoId}')">▶ Redă</button>
-                        <button class="add-btn" onclick="addToPlaylist('${title}')">＋ Adaugă</button>
-                    </div>
-                </div>`);
-        });
-    }
+Creează două boxe audio stilizate, moderne, cu difuzoare circulare și lumini neon.
 
-    function addToPlaylist(t) {
-        const list = document.getElementById('my-playlist');
-        const li = document.createElement('li');
-        li.className = 'playlist-item';
-        li.innerHTML = `<span>${t}</span> <button onclick="this.parentElement.remove(); songCount--; updateBadge(); saveToLocal();" style="color:red; background:none; border:none; font-size:20px;">×</button>`;
-        list.appendChild(li);
-        songCount++;
-        updateBadge();
-        saveToLocal();
-    }
+- Boxele sunt vizibile ca elemente decorative în fundal, fără să afecteze lizibilitatea playlistului.
+- În timpul redării, membranele difuzoarelor pulsează și vibrează.
+- Folosește Web Audio API și AnalyserNode pentru a analiza energia reală a sunetului.
+- Intensitatea vibrațiilor trebuie să varieze în funcție de energia audio.
+- Adaugă unde luminoase și un glow subtil în jurul boxelor.
+- La Pause sau Stop, animațiile se opresc lin.
+- Optimizează animațiile pentru performanță pe telefon.
+- Respectă `prefers-reduced-motion`.
+- Dacă analiza audio nu este disponibilă, folosește o animație CSS discretă ca fallback.
 
-    function updateBadge() {
-        const b = document.getElementById('badge');
-        const t = document.getElementById('time-popup');
-        b.innerText = songCount;
-        b.style.display = songCount > 0 ? 'flex' : 'none';
-        
-        if (songCount > 0) {
-            const minuteEstimate = Math.round(songCount * 3.5); // Media de 3.5 min/piesa
-            t.innerText = `~ ${minuteEstimate} min de muzică`;
-            t.style.display = 'block';
-        } else {
-            t.style.display = 'none';
-        }
-    }
+## 8. DETALII VIZUALE
 
-    function togglePlaylist() { document.getElementById('playlist-drawer').classList.toggle('open'); }
-    function saveToLocal() { localStorage.setItem('myPlaylist', document.getElementById('my-playlist').innerHTML); }
-    function clearFullPlaylist() { if(confirm("Golești toată lista?")) { document.getElementById('my-playlist').innerHTML = ''; songCount = 0; updateBadge(); saveToLocal(); } }
-    function playVideo(id) { document.getElementById('player-wrapper').innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allowfullscreen></iframe>`; document.getElementById('player-container').classList.add('active'); }
-    function closePlayer() { document.getElementById('player-container').classList.remove('active'); document.getElementById('player-wrapper').innerHTML = ''; }
-    
-    function sendToWhatsApp() {
-        const items = document.querySelectorAll('#my-playlist span');
-        if (!items.length) return alert("Lista e goală!");
-        const nume = prompt("Numele tău:");
-        if (!nume) return;
-        let msg = `Salut! Sunt *${nume.toUpperCase()}* și doresc următoarea muzică pe stick:\n\n`;
-        items.forEach((it, i) => msg += `*${i + 1}.* ${it.innerText}\n`);
-        window.open(`https://wa.me/40751904338?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-</script>
-</body>
-</html>
+Adaugă:
 
+- Particule luminoase discrete în fundal.
+- Tranziții line între melodii.
+- Equalizer animat pentru melodia activă.
+- Efect luminos pe butonul Play.
+- Scrollbar subțire, personalizat.
+- Feedback vizual la atingerea unui card.
+- O atmosferă elegantă, romantică și tehnologică.
 
+## 9. CERINȚE TEHNICE
+
+- HTML, CSS și JavaScript separate.
+- Cod curat, comentat și ușor de modificat.
+- Fără React, fără backend, fără biblioteci externe obligatorii.
+- Folosește căi relative pentru fișiere.
+- Site funcțional pe localhost și pe GitHub Pages.
+- Nu folosi servicii externe pentru streaming.
+- Gestionează fișierele lipsă și erorile de redare.
+- Nu afișa elemente goale sau date inventate.
+- Respectă safe-area pentru telefoanele cu notch.
+- Testează interfața la 320px, 375px, 390px și 430px.
+
+## 10. REZULTAT FINAL
+
+Vreau un website muzical cu aspect de aplicație premium pentru telefon.
+
+La început se vede brandul Lyra & Ionuț, fundalul cu boxe și playlistul vertical.
+
+Când ating o melodie, muzica începe, boxele prind viață și apare mini-playerul plutitor.
+
+La terminarea melodiei, începe automat următoarea, iar playerul rămâne vizibil cât timp playlistul continuă să cânte.
+
+Creează toate cele trei fișiere complete: `index.html`, `style.css` și `script.js`.
+
+Nu modifica, nu redenumi și nu șterge fișierele MP3 din folderul `song/`.
