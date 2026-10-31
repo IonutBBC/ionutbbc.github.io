@@ -1,42 +1,13 @@
-
-// Edit this array to change the playlist. Keep each file name identical to its MP3.
-const songs = [
-  { file: "Alessio - Hindi Punjabi.mp3", title: "Alessio - Hindi Punjabi" },
-  { file: "Are Baiatul Vrajeala.mp3", title: "Are Baiatul Vrajeala" },
-  { file: "Artur, Kira & Mr. Juvy - Te joci cu mintea mea.mp3", title: "Artur, Kira & Mr. Juvy - Te joci cu mintea mea" },
-  { file: "Babasha - Nu rasariti stele.mp3", title: "Babasha - Nu rasariti stele" },
-  { file: "Bianca Roz - Inima Mea Bate.mp3", title: "Bianca Roz - Inima Mea Bate" },
-  { file: "Bianca Roz - Sunt Vorbita Pe La Spate.mp3", title: "Bianca Roz - Sunt Vorbita Pe La Spate" },
-  { file: "Bianca Roz - Vreau Sa Simt Gurita Ta.mp3", title: "Bianca Roz - Vreau Sa Simt Gurita Ta" },
-  { file: "Carmen de la Salciua si Armin Nicoara - Traiesc viata ca-n Monaco.mp3", title: "Carmen de la Salciua si Armin Nicoara - Traiesc viata ca-n Monaco" },
-  { file: "Connect-R x Karmen - Fa-ti Talentu.mp3", title: "Connect-R x Karmen - Fa-ti Talentu" },
-  { file: "Costel Biju - Cadre CBX.mp3", title: "Costel Biju - Cadre CBX" },
-  { file: "Cristi Dules ❌ Miruna Tavas ❌ Mr. Juve - Nu-i de joaca cu iubirea.mp3", title: "Cristi Dules ❌ Miruna Tavas ❌ Mr. Juve - Nu-i de joaca cu iubirea" },
-  { file: "DUET (Maya&Ale) Asi, asi, asi.mp3", title: "DUET (Maya&Ale) Asi, asi, asi" },
-  { file: "Daria Dia - Inima Te Cheama.mp3", title: "Daria Dia - Inima Te Cheama" },
-  { file: "Daria Dia - Numai Tu Esti Alinare.mp3", title: "Daria Dia - Numai Tu Esti Alinare" },
-  { file: "Dj Sebi - Sa dau foc la suparare.mp3", title: "Dj Sebi - Sa dau foc la suparare" },
-  { file: "Eu cuminte, tu golan.mp3", title: "Eu cuminte, tu golan" },
-  { file: "FUG DE ACASA.mp3", title: "FUG DE ACASA" },
-  { file: "GHEBOASA - Cutia de valori.mp3", title: "GHEBOASA - Cutia de valori" },
-  { file: "Iuly Neamtu feat. Georgiana Lobont - Te voi iubi mereu.mp3", title: "Iuly Neamtu feat. Georgiana Lobont - Te voi iubi mereu" },
-  { file: "JO x Lazy Ed - Ce te-as.mp3", title: "JO x Lazy Ed - Ce te-as" },
-  { file: "Jasmina - M-ai Tradat Iubirea Mea.mp3", title: "Jasmina - M-ai Tradat Iubirea Mea" },
-  { file: "Jasmina - Om Cu Suflet Mare.mp3", title: "Jasmina - Om Cu Suflet Mare" },
-  { file: "Jasmina - Vreau O Noapte De Iubire.mp3", title: "Jasmina - Vreau O Noapte De Iubire" },
-  { file: "Karma feat. Susanu - Pirania.mp3", title: "Karma feat. Susanu - Pirania" },
-  { file: "Lele - Cutremur Pe Scara 2.mp3", title: "Lele - Cutremur Pe Scara 2" },
-  { file: "Leo de la Kuweit  Susanu - PANTERA.mp3", title: "Leo de la Kuweit  Susanu - PANTERA" },
-  { file: "Leo de la Rosiori - Platesc eu diferenta.mp3", title: "Leo de la Rosiori - Platesc eu diferenta" },
-  { file: "Livia T - Du-ma La Tine.mp3", title: "Livia T - Du-ma La Tine" },
-  { file: "Livia T - Fetele Cu Ochii Verzi.mp3", title: "Livia T - Fetele Cu Ochii Verzi" },
-  { file: "Liviu Guta - Bugatti, Ferrari, Micul Dejun In Bali.mp3", title: "Liviu Guta - Bugatti, Ferrari, Micul Dejun In Bali" },
-  { file: "Liviu Pustiu feat. Susanu - Sunt bine de tot.mp3", title: "Liviu Pustiu feat. Susanu - Sunt bine de tot" },
-  { file: "LuCash Music - Si ce!_ Aia e.mp3", title: "LuCash Music - Si ce!_ Aia e" },
-  { file: "Luci Diamantul x Babasha - Mesaje dimineata.mp3", title: "Luci Diamantul x Babasha - Mesaje dimineata" },
-  { file: "MADATORRICELLI - MAMACITA DALE.mp3", title: "MADATORRICELLI - MAMACITA DALE" },
-  { file: "Înflorit-a ruguțu.mp3", title: "Înflorit-a ruguțu" }
-];
+const playlistFiles = window.LYRA_SONG_FILES;
+const playlistIsValid = Array.isArray(playlistFiles) && playlistFiles.every((file) =>
+  typeof file === "string" &&
+  file.toLowerCase().endsWith(".mp3") &&
+  !file.includes("/") &&
+  !file.includes("\\")
+);
+const songs = playlistIsValid
+  ? playlistFiles.map((file) => ({ file, title: file.slice(0, -4) }))
+  : [];
 
 const loopPlaylist = true;
 const audio = document.getElementById("audio");
@@ -66,9 +37,16 @@ function formatTime(seconds) {
   return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 
-function renderPlaylist() {
+function renderPlaylist(emptyMessage = "Nu există melodii în folderul song.") {
   const fragment = document.createDocumentFragment();
   document.getElementById("song-count").textContent = `· ${songs.length}`;
+
+  if (songs.length === 0) {
+    const message = document.createElement("li");
+    message.className = "track-empty";
+    message.textContent = emptyMessage;
+    fragment.append(message);
+  }
 
   songs.forEach((song, index) => {
     const item = document.createElement("li");
@@ -166,7 +144,8 @@ function updateProgress() {
 
 function stopSpeakerAnimation() {
   speakers.classList.remove("is-playing");
-  speakers.style.setProperty("--speaker-pulse", "0");
+  speakers.classList.remove("is-fallback");
+  speakers.querySelectorAll(".led-segment").forEach((segment) => segment.classList.remove("is-lit"));
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
     animationFrame = 0;
@@ -174,29 +153,47 @@ function stopSpeakerAnimation() {
 }
 
 function animateSpeakers() {
-  if (!analyser || audio.paused || reducedMotion.matches) return;
+  if (audio.paused || animationFrame) return;
 
-  const samples = new Uint8Array(analyser.frequencyBinCount);
+  let samples = analyser ? new Uint8Array(analyser.frequencyBinCount) : null;
+  const bars = [...speakers.querySelectorAll(".led-bar")];
   const measure = () => {
     if (audio.paused) {
       stopSpeakerAnimation();
       return;
     }
-    analyser.getByteFrequencyData(samples);
-    let total = 0;
-    for (let index = 0; index < samples.length; index += 1) total += samples[index];
-    const energy = samples.length ? total / samples.length / 255 : 0;
-    speakers.style.setProperty("--speaker-pulse", String(Math.min(1, energy * 2.8)));
+    if (analyser) {
+      if (!samples || samples.length !== analyser.frequencyBinCount) {
+        samples = new Uint8Array(analyser.frequencyBinCount);
+      }
+      analyser.getByteFrequencyData(samples);
+    }
+    bars.forEach((bar, barIndex) => {
+      let litCount;
+      if (analyser) {
+        const start = Math.floor(barIndex * samples.length / bars.length);
+        const end = Math.max(start + 1, Math.floor((barIndex + 1) * samples.length / bars.length));
+        let peak = 0;
+        for (let index = start; index < end; index += 1) peak = Math.max(peak, samples[index]);
+        litCount = Math.round(Math.min(1, peak / 96) * bar.children.length);
+      } else {
+        const beat = (Math.sin(audio.currentTime * 5 + barIndex * 0.9) + 1) / 2;
+        litCount = Math.round(beat * bar.children.length);
+      }
+      [...bar.children].forEach((segment, segmentIndex) => {
+        segment.classList.toggle("is-lit", segmentIndex >= bar.children.length - litCount);
+      });
+    });
     animationFrame = requestAnimationFrame(measure);
   };
   animationFrame = requestAnimationFrame(measure);
 }
 
 function enableSpeakerAnimation() {
-  if (reducedMotion.matches) return;
   speakers.classList.add("is-playing");
   if (!analyser) {
     speakers.classList.add("is-fallback");
+    animateSpeakers();
     return;
   }
   speakers.classList.remove("is-fallback");
@@ -369,10 +366,6 @@ audio.addEventListener("error", () => {
     : "Fișierul MP3 lipsește sau nu poate fi citit.");
 });
 
-reducedMotion.addEventListener?.("change", () => {
-  if (reducedMotion.matches) stopSpeakerAnimation();
-});
-
 function createParticles() {
   if (reducedMotion.matches) return;
   const container = document.getElementById("particles");
@@ -387,7 +380,28 @@ function createParticles() {
   }
 }
 
+function createLedMeter() {
+  const fragment = document.createDocumentFragment();
+  for (let barIndex = 0; barIndex < 6; barIndex += 1) {
+    const bar = document.createElement("span");
+    bar.className = "led-bar";
+    for (let segmentIndex = 0; segmentIndex < 6; segmentIndex += 1) {
+      const segment = document.createElement("i");
+      segment.className = "led-segment";
+      bar.append(segment);
+    }
+    fragment.append(bar);
+  }
+  speakers.replaceChildren(fragment);
+}
+
 audio.volume = Number(volumeSlider.value);
 updateSlider(volumeSlider, audio.volume);
-renderPlaylist();
+createLedMeter();
+if (!playlistIsValid) {
+  console.error("Lista de melodii nu a putut fi încărcată din song/playlist.js.");
+}
+renderPlaylist(playlistIsValid
+  ? "Nu există melodii în folderul song."
+  : "Lista de melodii nu a putut fi încărcată. Verifică song/playlist.js.");
 createParticles();
